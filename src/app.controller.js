@@ -2,6 +2,8 @@ import connectToMongoDB from "./db/db.connection.js";
 import express from "express";
 import handleError from "./utils/error/error_handler.js";
 import { CustomError } from "./utils/custom/custom_error_class.js";
+import authRouter from "./modules/auth/auth.controller.js";
+import userRouter from "./modules/user/user.controller.js";
 
 async function bootstrap() {
   const app = express();
@@ -24,6 +26,8 @@ async function bootstrap() {
     });
   } else {
     app.use(express.json());
+    app.use('/auth',authRouter);
+    app.use('/user',userRouter)
     app.all("{/*d}", (req, res, next) => {
       next(
         new CustomError(`Wrong URL ${req.url} or METHOD ${req.method} ❌`, 404)
