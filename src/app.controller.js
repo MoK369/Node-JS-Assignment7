@@ -18,7 +18,6 @@ async function bootstrap() {
 
   if (!dbConnectionResult) {
     app.all("{/*d}", (req, res, next) => {
-      console.log("inside first app.all");
       next(
         new CustomError("Something went wrong please try again later ⛔️", 500)
       );
@@ -26,8 +25,6 @@ async function bootstrap() {
   } else {
     app.use(express.json());
     app.all("{/*d}", (req, res, next) => {
-      console.log("inside second app.all");
-
       next(
         new CustomError(`Wrong URL ${req.url} or METHOD ${req.method} ❌`, 404)
       );
