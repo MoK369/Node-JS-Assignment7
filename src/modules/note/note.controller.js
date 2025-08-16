@@ -8,6 +8,7 @@ const noteRouter = Router();
 noteRouter.use(authMiddleware);
 noteRouter.post("/", noteService.createNote);
 noteRouter.put("/all", noteService.updateTitleOfAllNotes);
+noteRouter.get("/paginate-sort", noteService.getNotesOfUser);
 noteRouter.patch("/:noteId", noteAuthMiddleware, noteService.updateNote);
 noteRouter.put("/:noteId", noteAuthMiddleware, noteService.replaceWithNewNote);
 noteRouter.delete("/:noteId", noteAuthMiddleware, noteService.deleteNote);

@@ -3,6 +3,8 @@ import { CustomError } from "../../utils/custom/custom_error_class.js";
 
 export const noteAuthMiddleware = async (req, res, next) => {
   try {
+    const method = req.method;
+
     const noteId = req.params.noteId;
     const note = await NoteModel.findById(noteId);
 
@@ -11,7 +13,11 @@ export const noteAuthMiddleware = async (req, res, next) => {
     }
 
     if (!req.user._id.equals(note.userId)) {
-      throw new CustomError("not authorized to update this note", 403);
+      const action =
+        method.toLowerCase() == "put" || method.toLowerCase() == "put"
+          ? "update"
+          : method.toLowerCase();
+      throw new CustomError(`not authorized to ${action} this note`, 403);
     }
     req.note = note;
     next();

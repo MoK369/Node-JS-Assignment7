@@ -118,3 +118,37 @@ export const deleteNote = async (req, res, next) => {
     next(error);
   }
 };
+
+export const getNotesOfUser = async (req, res, next) => {
+  try {
+    let { pageSize = 2, page = 1 } = req.query || {};
+    pageSize = Number(pageSize);
+    page = Number(page);
+
+    if (page <= 0 || pageSize <= 0) {
+      throw new CustomError("page and pageSize numbers must be greator than 0");
+    }
+    const offset = pageSize * (page - 1);
+    const [totalCount, notes] = await Promise.all([
+      NoteModel.countDocuments({ userId: req.user._id }),
+      NoteModel.find({ userId: req.user._id })
+        .sort({ createdAt: -1 })
+        .limit(pageSize)
+        .skip(offset),
+    ]);
+    console.log({ totalCount });
+
+    return res.json({
+      success: true,
+      body: {
+        totalNotes: totalCount,
+        pageSize,
+        page,
+        tatalPages: Math.ceil(totalCount / pageSize),
+        notes,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
