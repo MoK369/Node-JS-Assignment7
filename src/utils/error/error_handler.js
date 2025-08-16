@@ -17,7 +17,7 @@ function handleError(error, req, res, next) {
   }
   if(error.name == 'JsonWebTokenError' || error.name == 'TokenExpiredError'){
     console.log({ errorName: error.name,message:error.message });
-    return res.status(403).json({success:false,error:"invalid token"})
+    return res.status(400).json({success:false,error:"invalid token"})
   }
   console.log({error});
   

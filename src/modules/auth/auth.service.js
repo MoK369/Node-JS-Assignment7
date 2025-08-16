@@ -1,9 +1,9 @@
 // @ts-check
 import UserModel from "../../db/models/user.model.js";
-import bcrypt from "bcryptjs";
 import { CustomError } from "../../utils/custom/custom_error_class.js";
-import CryptoJS from "crypto-js";
-import jwt from "jsonwebtoken";
+import * as hashing from "../../utils/security/hash.security.js";
+import * as encryption from "../../utils/security/encryption.security.js";
+import { generateToken } from "../../utils/security/token.security.js";
 
 export const signup = async (req, res, next) => {
   try {
@@ -11,8 +11,10 @@ export const signup = async (req, res, next) => {
     if (!body.password) {
       throw new CustomError("Validation Error: password field is required");
     }
-    body.password = bcrypt.hashSync(body.password, 10);
-    body.phone = CryptoJS.AES.encrypt(body.phone, "8e47dcd5");
+    body.password = hashing.hashData({ password: body.password });
+    body.phone = encryption.AesEncrypt({
+      dataToEncrypt: body.phone,
+    });
 
     const result = await UserModel.create([req.body]);
     console.log(result);
@@ -43,17 +45,21 @@ export const login = async (req, res, next) => {
     if (!user) {
       throw new CustomError("Wrong email or password!");
     }
-    const passwordResult = bcrypt.compareSync(password, user.password);
+    const passwordResult = hashing.compareHashedData({
+      data: password,
+      hashedData: user.password,
+    });
     if (!passwordResult) {
       throw new CustomError("Wrong email or password!");
     }
 
-    const token = jwt.sign({ _id: user._id }, "3659a8e88df8a6cb", {
-      expiresIn: 60 * 60,
+    const token = generateToken({
+      payload: { _id: user._id },
     });
 
-    const phoneBytes = CryptoJS.AES.decrypt(user.phone, "8e47dcd5");
-    user.phone = phoneBytes.toString(CryptoJS.enc.Utf8);
+    user.phone = encryption.AesDecrypt({
+      encryptedData: user.phone,
+    });
     // @ts-ignore
     delete user.password;
     return res.json({

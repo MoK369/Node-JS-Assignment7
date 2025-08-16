@@ -1,21 +1,12 @@
 import UserModel from "../../db/models/user.model.js";
 import { CustomError } from "../../utils/custom/custom_error_class.js";
-import jwt from "jsonwebtoken";
-import CryptoJS from "crypto-js";
+import {
+  AesDecrypt,
+  AesEncrypt,
+} from "../../utils/security/encryption.security.js";
 
 export const updateUserProfile = async (req, res, next) => {
   try {
-    const token = req.headers.authorization;
-    if (!token) {
-      throw new CustomError("authorization is messing!", 403);
-    }
-    const payload = jwt.verify(token, "3659a8e88df8a6cb");
-
-    const user = await UserModel.findById(payload._id);
-    if (!user) {
-      throw new CustomError("user is not found", 404);
-    }
-
     const body = req.body || {};
     const updateQueryObject = {};
     if (body.name) updateQueryObject.name = body.name;
@@ -32,19 +23,18 @@ export const updateUserProfile = async (req, res, next) => {
     console.log({ phone: updateQueryObject.phone });
 
     if (updateQueryObject.phone) {
-      updateQueryObject.phone = CryptoJS.AES.encrypt(
-        updateQueryObject.phone,
-        "8e47dcd5"
-      ).toString();
+      updateQueryObject.phone = AesEncrypt({
+        dataToEncrypt: updateQueryObject.phone,
+      }).toString();
     }
     if (!Object.keys(updateQueryObject).length) {
       throw new CustomError("nothing to update", 400);
     }
     const result = await UserModel.updateOne(
-      { _id: payload._id },
+      { _id: req.user._id },
       updateQueryObject
     );
-    return res.json({ message: "user updated!" });
+    return res.json({ success: true, message: "user updated!" });
   } catch (error) {
     next(error);
   }
@@ -52,19 +42,19 @@ export const updateUserProfile = async (req, res, next) => {
 
 export const deleteUser = async (req, res, next) => {
   try {
-    const token = req.headers.authorization;
-    if (!token) {
-      throw new CustomError("authorization is messing!", 403);
-    }
-    const payload = jwt.verify(token, "3659a8e88df8a6cb");
+    await UserModel.deleteOne({ _id: req.user._id });
+    return res.json({ success: true, message: "user deleted!" });
+  } catch (error) {
+    next(error);
+  }
+};
 
-    const user = await UserModel.findById(payload._id);
-    if (!user) {
-      throw new CustomError("user is not found", 404);
-    }
-
-    const result = await UserModel.deleteOne({ _id: payload._id });
-    return res.json({ message: "user deleted!" });
+export const getLoggedUser = async (req, res, next) => {
+  try {
+    const user = req.user.toObject();
+    user.phone = AesDecrypt({ encryptedData: user.phone });
+    delete user.password;
+    return res.json({ success: true, body: user });
   } catch (error) {
     next(error);
   }
