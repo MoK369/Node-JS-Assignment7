@@ -152,3 +152,65 @@ export const getNotesOfUser = async (req, res, next) => {
     next(error);
   }
 };
+
+export const getNoteById = async (req, res, next) => {
+  try {
+    return res.json({
+      success: true,
+      body: req.note,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getNoteByContent = async (req, res, next) => {
+  try {
+    const contentQuery = req.query.content;
+    console.log({ contentQuery });
+
+    if (!contentQuery) {
+      throw new CustomError("content to find with is missing", 400);
+    }
+
+    const result = await NoteModel.find({
+      $and: [
+        {
+          content: { $regex: contentQuery, $options: "i" },
+          userId: req.user._id,
+        },
+      ],
+    });
+
+    if (!result.length) {
+      throw new CustomError("no notes were found", 404);
+    }
+
+    return res.json({
+      success: true,
+      body: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getNotesWithLoggedUserInfo = async (req, res, next) => {
+  try {
+    const notes = await NoteModel.find(
+      { userId: req.user._id },
+      { title: 1, userId: 1, createdAt: 1 }
+    ).populate([{ path: "userId", select: "email" }]);
+
+    if (!notes.length) {
+      throw new CustomError("no notes were found", 404);
+    }
+
+    return res.json({
+      success: true,
+      body: notes,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
