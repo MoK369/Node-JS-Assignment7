@@ -214,3 +214,68 @@ export const getNotesWithLoggedUserInfo = async (req, res, next) => {
     next(error);
   }
 };
+
+export const getAllNotesAndSearchWithTitle = async (req, res, next) => {
+  try {
+    const titleQuery = req.query.title;
+    console.log({ titleQuery });
+
+    const result = await NoteModel.aggregate([
+      {
+        $match: {
+          $and: [
+            { userId: req.user._id },
+            titleQuery ? { title: titleQuery } : {},
+          ],
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          foreignField: "_id",
+          localField: "userId",
+          as: "user",
+          pipeline: [
+            {
+              $project: {
+                _id: 0,
+                name: 1,
+                email: 1,
+              },
+            },
+          ],
+        },
+      },
+    ]);
+
+    if (!result.length) {
+      throw new CustomError("no notes were found", 404);
+    }
+
+    return res.json({
+      success: true,
+      body: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteAllNotes = async (req, res, next) => {
+  try {
+    const result = await NoteModel.deleteMany({ userId: req.user._id });
+
+    console.log({ result });
+
+    if (!result.deletedCount) {
+      throw new CustomError("no notes were found", 404);
+    }
+
+    return res.json({
+      success: true,
+      message: "all notes were deleted!",
+    });
+  } catch (error) {
+    next(error);
+  }
+};

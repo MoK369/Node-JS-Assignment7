@@ -23,7 +23,7 @@ function handleError(error, req, res, next) {
   
   console.log({ errorName: error.name });
 
-  return res.status(500).json({ success: false, error: error });
+  return res.status(500).json({ success: false, error: error.message});
 }
 
 export default handleError;
