@@ -1,12 +1,12 @@
 import connectToMongoDB from "./db/db.connection.js";
 import express from "express";
-import handleError from "./utils/error/error_handler.js";
 import { CustomError } from "./utils/custom/custom_error_class.js";
 import authRouter from "./modules/auth/auth.controller.js";
 import userRouter from "./modules/user/user.controller.js";
 import path from "node:path";
 import * as dotenv from "dotenv";
 import noteRouter from "./modules/note/note.controller.js";
+import handleError from "./utils/handlers/error_handler.js";
 
 async function bootstrap() {
   // configure dotenv file
