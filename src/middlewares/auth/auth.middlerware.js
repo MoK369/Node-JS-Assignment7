@@ -7,7 +7,7 @@ export const authMiddleware = async (req, res, next) => {
   try {
     const token = req.headers.authorization;
     if (!token) {
-      throw new CustomError("authorization is messing!", 403);
+      throw new CustomError("authorization is messing!", 400);
     }
     const payload = verifyToken({ token});
 
