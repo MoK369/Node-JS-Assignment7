@@ -7,7 +7,7 @@ const noteSchema = new Schema(
       type: String,
       required: true,
       minLength: 3,
-      maxLength: 20,
+      maxLength: 30,
       validate: {
         validator: function (value) {
           if (value === value.toUpperCase()) {

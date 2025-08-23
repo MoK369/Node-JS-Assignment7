@@ -1,4 +1,7 @@
 function handleError(error, req, res, next) {
+  console.log({ error });
+  console.log({ errorName: error.name });
+  
   if (error.name == "CustomError") {
     return res
       .status(error.statusCode)
@@ -15,15 +18,12 @@ function handleError(error, req, res, next) {
     }
     return res.status(409).json({ success: false, error: error.message });
   }
-  if(error.name == 'JsonWebTokenError' || error.name == 'TokenExpiredError'){
-    console.log({ errorName: error.name,message:error.message });
-    return res.status(400).json({success:false,error:"invalid token"})
+  if (error.name == "JsonWebTokenError" || error.name == "TokenExpiredError") {
+    console.log({ errorName: error.name, message: error.message });
+    return res.status(400).json({ success: false, error: "invalid token" });
   }
-  console.log({error});
-  
-  console.log({ errorName: error.name });
 
-  return res.status(500).json({ success: false, error: error.message});
+  return res.status(500).json({ success: false, error: error.message });
 }
 
 export default handleError;

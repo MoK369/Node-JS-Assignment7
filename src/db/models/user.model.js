@@ -30,7 +30,7 @@ const userSchema = new Schema(
   },
   {
     timestamps: true,
-    optimisticConcurrency:true
+    optimisticConcurrency:true,
   }
 );
 

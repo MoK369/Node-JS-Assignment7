@@ -1,3 +1,4 @@
+// @ts-check
 import UserModel from "../../db/models/user.model.js";
 import { CustomError } from "../../utils/custom/custom_error_class.js";
 import {
@@ -7,32 +8,29 @@ import {
 import asyncHandler from "../../utils/handlers/async_handler.js";
 
 export const updateUserProfile = asyncHandler(async (req, res, next) => {
-  const body = req.body || {};
-  const updateQueryObject = {};
-  if (body.name) updateQueryObject.name = body.name;
-  if (body.email) updateQueryObject.email = body.email;
-  if (body.phone) updateQueryObject.phone = body.phone;
-  if (body.age) updateQueryObject.age = body.age;
+  let { name, email, phone, age } = req.body || {};
 
-  if (updateQueryObject.email) {
-    const user = await UserModel.findOne({ email: updateQueryObject.email });
+  if (email) {
+    const user = await UserModel.findOne({ email: email });
     if (user) {
       throw new CustomError("email already exists", 409);
     }
   }
-  console.log({ phone: updateQueryObject.phone });
+  console.log({ name });
 
-  if (updateQueryObject.phone) {
-    updateQueryObject.phone = AesEncrypt({
-      dataToEncrypt: updateQueryObject.phone,
+  console.log({ phone: phone });
+
+  if (phone) {
+    phone = AesEncrypt({
+      dataToEncrypt: phone,
     }).toString();
   }
-  if (!Object.keys(updateQueryObject).length) {
+  if (!name && !email && !phone && !age) {
     throw new CustomError("nothing to update", 400);
   }
- await UserModel.updateOne(
+  await UserModel.updateOne(
     { _id: req.user._id },
-    updateQueryObject,
+    { name, email, phone, age },
     {
       runValidators: true,
     }

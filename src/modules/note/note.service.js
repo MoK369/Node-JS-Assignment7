@@ -1,3 +1,4 @@
+// @ts-check
 import NoteModel from "../../db/models/notes.model.js";
 import { CustomError } from "../../utils/custom/custom_error_class.js";
 import asyncHandler from "../../utils/handlers/async_handler.js";
@@ -18,17 +19,16 @@ export const createNote = asyncHandler(async (req, res, next) => {
 export const updateNote = asyncHandler(async (req, res, next) => {
   const { title, content } = req.body || {};
 
-  const updateObjectQuery = {};
-  if (title) updateObjectQuery.title = title;
-  if (content) updateObjectQuery.content = content;
-
-  if (!Object.keys(updateObjectQuery).length) {
+  if (!title && !content) {
     throw new CustomError("nothing to update", 400);
   }
 
   const result = await NoteModel.findOneAndUpdate(
     { _id: req.note._id },
-    updateObjectQuery,
+    {
+      title,
+      content
+    },
     { new: true, runValidators: true }
   );
   console.log({ result });
